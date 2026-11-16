@@ -1,0 +1,90 @@
+openapi: 3.1.0
+info:
+  title: Greeting
+  version: 1.0.0
+  description: Submit a name; the process writes its greeting in the chosen language and saves it.
+paths:
+  /api/health:
+    get:
+      operationId: health
+      responses:
+        "200":
+          description: The web process serves.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, const: ok }
+  /api/greetings:
+    post:
+      operationId: submitGreeting
+      description: Starts the greeting of a name once per request ID; a repeat answers the same greeting.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requestId, name]
+              properties:
+                requestId: { type: string, format: uuid, description: A lower-case UUID the caller chooses. }
+                name: { type: string, minLength: 1, maxLength: 80, description: Trimmed before use. }
+                language: { $ref: "#/components/schemas/Language" }
+      responses:
+        "202":
+          description: The greeting is being written.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [requestId, status]
+                properties:
+                  requestId: { type: string, format: uuid }
+                  status: { $ref: "#/components/schemas/Status" }
+        "400":
+          description: An invalid request ID, name or language; nothing starts.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/greetings/{requestId}:
+    parameters:
+      - { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: readGreeting
+      responses:
+        "200":
+          description: The greeting's current state.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Greeting" }
+        "404":
+          description: No greeting has this request ID.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+components:
+  schemas:
+    Language:
+      type: string
+      enum: [english, spanish, french]
+      default: english
+    Status:
+      type: string
+      enum: [composing, ready, failed]
+    Greeting:
+      type: object
+      required: [requestId, status, name, language]
+      properties:
+        requestId: { type: string, format: uuid }
+        status: { $ref: "#/components/schemas/Status" }
+        name: { type: string }
+        language: { $ref: "#/components/schemas/Language" }
+        greeting: { type: string, description: Set once the status is ready. }
+        notice: { type: string, description: Why a failed run has no greeting. }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }

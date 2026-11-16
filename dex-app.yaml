@@ -1,0 +1,7 @@
+schemaVersion: superverse.dev/dex-app/v1
+application:
+  port: 8080
+  healthPath: /api/health
+flowDefinitions:
+  - sourcePath: src/greeting-flow.ts
+connectors: []

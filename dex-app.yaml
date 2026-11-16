@@ -1,4 +1,4 @@
-schemaVersion: superverse.dev/dex-app/v1
+schemaVersion: dex.superdurable.io/dex-app/v1
 application:
   port: 8080
   healthPath: /api/health

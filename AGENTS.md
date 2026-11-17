@@ -7,14 +7,18 @@ Flow's Attribute. Studio owns management.
 ## Files to change for a feature
 
 1. `src/<name>-flow.ts`: one Flow per file with its Attributes, Channels and
-   Steps, following `greeting-flow.ts`. Import only `@superdurable/dex` there:
-   the Flow check reads that one file and skips relative imports.
+   Steps, following `greeting-flow.ts`. Import only `@superdurable/dex` and
+   connector packages there: the Flow check reads that one file and skips
+   relative imports. A Step that calls an outside service comes from a
+   connector factory, such as `newPostChannelMessageStep` of
+   `@superdurable/connector-slack`.
 2. `src/application.ts`: `loadApplication`, which returns the Flow list, the
    routes and the page.
 3. `dex-app.yaml`, written in YAML: one `flowDefinitions` entry per Flow file,
    and one `connectors` entry per connection to an outside service. A
    connector is an `@superdurable/connector-<name>` package installed with
-   `npm install --save-exact`; its entry names that `package` and `version`
+   `npm install --save-exact`, which pins it in `package.json` and
+   `package-lock.json`; its entry names that `package` and `version`
    (fields: https://docs.superdurable.io/reference/dex-app/manifest#s2), and
    tests use the package's `mock` export. `npm ls @superdurable/dex
    @superdurable/connectors-sdk` must show one version of each: raise the

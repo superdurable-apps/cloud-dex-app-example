@@ -16,7 +16,9 @@ Flow's Attribute. Studio owns management.
    connector is an `@superdurable/connector-<name>` package installed with
    `npm install --save-exact`; its entry names that `package` and `version`
    (fields: https://docs.superdurable.io/reference/dex-app/manifest#s2), and
-   tests use the package's `mock` export.
+   tests use the package's `mock` export. `npm ls @superdurable/dex
+   @superdurable/connectors-sdk` must show one version of each: raise the
+   `@superdurable/dex` pin to what the connector needs.
 4. `openapi/openapi.yaml`, the HTTP contract, then the handlers in
    `src/<name>-api.ts` (see `greeting-api.ts`).
 5. `src/page.ts` for the page.

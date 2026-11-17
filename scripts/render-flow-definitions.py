@@ -51,8 +51,12 @@ def main() -> None:
     parser.add_argument("--dexcli", default=os.environ.get("DEXCLI", "dexcli"))
     arguments = parser.parse_args()
     manifest = read_manifest()
-    if manifest.get("connectors"):
-        raise SystemExit("dex-app.yaml declares connectors, which TypeScript applications cannot use yet")
+    # The platform checks the connector fields; only this script sees package.json.
+    dependencies = json.loads((ROOT / "package.json").read_text(encoding="utf-8")).get("dependencies") or {}
+    for connector in manifest.get("connectors") or []:
+        package, version = connector.get("package"), connector.get("version")
+        if dependencies.get(package) != version:
+            raise SystemExit(f"dex-app.yaml pins {package} {version}, but package.json pins {dependencies.get(package)}")
     entries = manifest.get("flowDefinitions") or []
     if not entries or any(not isinstance(entry, dict) for entry in entries):
         raise SystemExit("dex-app.yaml must list each Flow source as an item \"- sourcePath: <path>\" of flowDefinitions")

@@ -11,14 +11,10 @@ Flow's Attribute. Studio owns management.
    the Flow check reads that one file and skips relative imports.
 2. `src/application.ts`: `loadApplication`, which returns the Flow list, the
    routes and the page.
-3. `dex-app.yaml`, written in YAML: one `flowDefinitions` entry per Flow file,
-   and one `connectors` entry per connection to an outside service. A
-   connector is an `@superdurable/connector-<name>` package installed with
-   `npm install --save-exact`; its entry names that `package` and `version`
-   (fields: https://docs.superdurable.io/reference/dex-app/manifest#s2), and
-   tests use the package's `mock` export. `npm ls @superdurable/dex
-   @superdurable/connectors-sdk` must show one version of each: raise the
-   `@superdurable/dex` pin to what the connector needs.
+3. `dex-app.yaml`, written in YAML: one `flowDefinitions` entry per Flow file.
+   A TypeScript process cannot use connectors yet: keep `connectors` empty. An
+   application that needs a connector uses the Go profile (`go-react-v1`) or,
+   for an agent, the TypeScript agent example `typescript-support-agent`.
 4. `openapi/openapi.yaml`, the HTTP contract, then the handlers in
    `src/<name>-api.ts` (see `greeting-api.ts`).
 5. `src/page.ts` for the page.

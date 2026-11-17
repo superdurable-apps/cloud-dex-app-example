@@ -51,6 +51,11 @@ def main() -> None:
     parser.add_argument("--dexcli", default=os.environ.get("DEXCLI", "dexcli"))
     arguments = parser.parse_args()
     manifest = read_manifest()
+    # A process's Flow sources cannot import a connector package yet; an agent's session graph can use one.
+    template = ROOT / ".dex" / "template.json"
+    kind = json.loads(template.read_text(encoding="utf-8")).get("kind") if template.is_file() else None
+    if manifest.get("connectors") and kind != "agent":
+        raise SystemExit("dex-app.yaml declares connectors, which TypeScript processes cannot use yet")
     # The platform checks the connector fields; only this script sees package.json.
     dependencies = json.loads((ROOT / "package.json").read_text(encoding="utf-8")).get("dependencies") or {}
     for connector in manifest.get("connectors") or []:

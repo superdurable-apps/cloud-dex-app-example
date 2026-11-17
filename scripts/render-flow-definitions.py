@@ -45,14 +45,37 @@ def blocking_diagnostics(graph):
             if not (d.get("severity") == "warning" and d.get("code") in ADVISORY_DIAGNOSTICS)]
 
 
+def check_connector_pins(connectors: list[dict[str, object]]) -> None:
+    """Each declared connector package is pinned exactly in package.json and installed at that version, with a
+    sha512 integrity, by package-lock.json, which Preview and Release require; the platform checks the other fields."""
+    if not connectors:
+        return
+    dependencies = json.loads((ROOT / "package.json").read_text(encoding="utf-8")).get("dependencies") or {}
+    lock = json.loads((ROOT / "package-lock.json").read_text(encoding="utf-8"))
+    installed = lock.get("packages")
+    if not isinstance(installed, dict) or not isinstance(lock.get("lockfileVersion"), int) or lock["lockfileVersion"] < 2:
+        raise SystemExit("package-lock.json must be lockfileVersion 2 or later; run npm install with npm 7 or later")
+    for connector in connectors:
+        package, version = connector.get("package"), connector.get("version")
+        fix = f"; run npm install --save-exact {package}@{version}"
+        if dependencies.get(package) != version:
+            raise SystemExit(f"dex-app.yaml declares {package} {version}, but package.json pins {dependencies.get(package)}{fix}")
+        entry = installed.get(f"node_modules/{package}")
+        if not isinstance(entry, dict) or entry.get("version") != version or entry.get("link"):
+            found = entry.get("version") if isinstance(entry, dict) else None
+            raise SystemExit(f"dex-app.yaml declares {package} {version}, but package-lock.json "
+                             + (f"installs {found}" if found else "does not install it") + fix)
+        if not any(item.startswith("sha512-") for item in str(entry.get("integrity", "")).split()):
+            raise SystemExit(f"package-lock.json pins no sha512 integrity of {package} {version}{fix}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, help="write the rendered definitions as JSON")
     parser.add_argument("--dexcli", default=os.environ.get("DEXCLI", "dexcli"))
     arguments = parser.parse_args()
     manifest = read_manifest()
-    if manifest.get("connectors"):
-        raise SystemExit("dex-app.yaml declares connectors, which TypeScript applications cannot use yet")
+    check_connector_pins(manifest.get("connectors") or [])
     entries = manifest.get("flowDefinitions") or []
     if not entries or any(not isinstance(entry, dict) for entry in entries):
         raise SystemExit("dex-app.yaml must list each Flow source as an item \"- sourcePath: <path>\" of flowDefinitions")

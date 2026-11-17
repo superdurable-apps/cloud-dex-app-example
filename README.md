@@ -27,12 +27,17 @@ exactly as a new project starts from it, plus this README and the MIT license.
 
 ## Import it
 
-1. Fork or copy this repository to a GitHub account or organization where the
-   Dex GitHub App is installed, with `main` as the default branch.
-2. Log in to [Dex Cloud](https://dex.superdurable.io/login), start a project
-   and choose Import project.
-3. Enter `owner/name` and check the repository. Dex reads `main`, reports a
-   process in TypeScript and its Flow, and you create the project.
+1. Fork or copy this repository to a GitHub account or organization, with
+   `main` as the default branch.
+2. A Teamspace admin opens **Connections** in
+   [Dex Cloud](https://dex.superdurable.io/login), chooses **Install the
+   GitHub App** (an owner of the GitHub organization installs it), then
+   **Connect GitHub**.
+3. A member chooses **Import project**, picks the account under **Import
+   from**, picks the repository or types `owner/name` and chooses **Check
+   repository**, then **Create project**.
+
+Guide: [Managed Dex App](https://docs.superdurable.io/components/managed-dex-app).
 
 ## Run the checks locally
 
